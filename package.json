@@ -1,0 +1,30 @@
+{
+  "name": "socketio-apexchart",
+  "version": "1.0.0",
+  "description": "socket.io / apex charts / sql server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node starter.js"
+  },
+  "keywords": [
+    "socketio",
+    "charts",
+    "sqlserver",
+    "express"
+  ],
+  "author": "Julien Regnault",
+  "license": "MIT",
+  "dependencies": {
+    "config": "^2.0.1",
+    "express": "^4.16.4",
+    "mssql": "^4.2.1",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
