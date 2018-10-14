@@ -32,11 +32,8 @@ io.on('connection', function (socket) {
     // Socket connection welcome message
     socket.emit('hello', { hello: 'world' });
 
-    options.xaxis.categories = ['Tokyo', 'Mumbai'];
-    options.series = [{name: 'Population', data: [38001000, 25703168]}];
-    options.title.text = 'Largest cities in the world';
-    
-    socket.emit('update-graph', options);
+    sqlrequest()
+        .then(socket.emit('update-graph', options));
 
     // every 30 seconds - we releod the graph
     setInterval(() => {
@@ -44,6 +41,33 @@ io.on('connection', function (socket) {
     }, 30000);
 });
 
+async function sqlrequest() {
+    try {
+        console.log(`connecting to ${config.db.database}...`);
+        let pool = await sql.connect(config.db);
+        console.log(`connected to ${config.db.database}!`);
+        let result = await pool.request()
+            // .input('input_parameter', sql.VarChar, "") // to be called with @input_parameter
+            .query('select city, population from POPULATION order by population desc');
+
+        // rebuild cities/population arrays
+        cities = [];
+        population = [];
+
+        result.recordset.forEach(city => {
+            cities.push(city.city);
+            population.push(city.population);
+        });
+
+        options.xaxis.categories = cities;
+        options.series = [{name: 'Population', data: population}];
+        options.title.text = 'Largest cities in the world';
+    } catch (err) {
+        console.log(err);
+    } finally { 
+        sql.close();
+    }
+}
 // Every 20 seconds, we send a request to the SQL Server
 setInterval(() => {
     // Open Sql Server Configuration Manager,
@@ -51,35 +75,9 @@ setInterval(() => {
     // Port 1433
 
     // https://www.npmjs.com/package/mssql#asyncawait
-    (async () => {
-        try {
-            console.log(`connecting to ${config.db.database}...`);
-            let pool = await sql.connect(config.db);
-            console.log(`connected to ${config.db.database}!`);
-            let result = await pool.request()
-                // .input('input_parameter', sql.VarChar, "") // to be called with @input_parameter
-                .query('select city, population from POPULATION order by population desc');
-
-            // rebuild cities/population arrays
-            cities = [];
-            population = [];
-
-            result.recordset.forEach(city => {
-                cities.push(city.city);
-                population.push(city.population);
-            });
-
-            options.xaxis.categories = cities;
-            options.series = [{name: 'Population', data: population}];
-            options.title.text = 'Largest cities in the world';
-        } catch (err) {
-            console.log(err);
-        } finally { 
-            sql.close();
-        }
-    })();
-
-    sql.on('error', err => {
-        console.log(err);
-    })
+    sqlrequest();
 }, 20000);
+
+sql.on('error', err => {
+    console.log(err);
+})
