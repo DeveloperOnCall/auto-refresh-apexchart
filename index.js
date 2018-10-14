@@ -36,11 +36,11 @@ io.on('connection', function (socket) {
     options.series = [{name: 'Population', data: [38001000, 25703168]}];
     options.title.text = 'Largest cities in the world';
     
-    socket.emit('reload-graph', options);
+    socket.emit('update-graph', options);
 
     // every 30 seconds - we releod the graph
     setInterval(() => {
-        socket.emit('reload-graph', options);
+        socket.emit('update-graph', options);
     }, 30000);
 });
 
